@@ -26,8 +26,133 @@ The stages of this pipeline take care of all the system interaction details, suc
 Writing system regression tests in a high-level modern programming language, like Python, poses a great advantage in organizing and maintaining the tests.
 Users can create their own test hierarchies, create test factories for generating multiple tests at the same time and also customize them in a simple and expressive way.
 
+## Getting ReFrame on BB5
 
-## Getting ReFrame
+Clone ReFrame fork from BlueBrain organisation on BB5:
+
+```bash
+git clone https://github.com/BlueBrain/reframe.git -b bbp
+```
+
+Initialize environment:
+
+```bash
+cd reframe
+module load unstable python
+python -mvenv devenv
+. ./devenv/bin/activate
+pip install -r requirements.txt
+```
+
+Now ReFrame should be ready to use:
+
+```bash
+./bin/reframe -h
+usage: reframe [-h] [--prefix DIR] [-o DIR] [-s DIR] [--timestamp [TIMEFMT]]
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+Options controlling ReFrame output:
+  --prefix DIR          Set general directory prefix to DIR
+  -o DIR, --output DIR  Set output directory prefix to DIR
+  -s DIR, --stage DIR   Set stage directory prefix to DIR
+..
+```
+
+See BB5 config using:
+
+```bash
+./bin/reframe -C config/bb5.py --system=bb5 --show-config
+```
+
+Run basic test on BB5:
+
+```bash
+./bin/reframe -C config/bb5.py --system=bb5:login -c tutorial/example1.py -r
+...
+[ReFrame Setup]
+  version:           3.1-dev0 (rev: b2b3b6be)
+  command:           './bin/reframe -C config/bb5.py --system=bb5:login -c tutorial/example1.py -r'
+  launched by:       kumbhar@bbpv1.epfl.ch
+  working directory: '/gpfs/bbp.cscs.ch/data/project/proj16/kumbhar/pramod_scratch/reframe_test/reframe'
+  settings file:     '/tmp/tmppl89y40h.py'
+  check search path: (R) '/gpfs/bbp.cscs.ch/data/project/proj16/kumbhar/pramod_scratch/reframe_test/reframe/tutorial/example1.py'
+  stage directory:   '/gpfs/bbp.cscs.ch/data/project/proj16/kumbhar/pramod_scratch/reframe_test/reframe/stage'
+  output directory:  '/gpfs/bbp.cscs.ch/data/project/proj16/kumbhar/pramod_scratch/reframe_test/reframe/output'
+
+[==========] Running 1 check(s)
+[==========] Started on Mon Jun 29 09:58:33 2020
+
+[----------] started processing Example1Test (Simple matrix-vector multiplication example)
+[ RUN      ] Example1Test on bb5:login using PrgEnv-gnu
+[ RUN      ] Example1Test on bb5:login using PrgEnv-intel
+[ RUN      ] Example1Test on bb5:login using PrgEnv-pgi
+[----------] finished processing Example1Test (Simple matrix-vector multiplication example)
+
+[----------] waiting for spawned checks to finish
+[       OK ] (1/3) Example1Test on bb5:login using PrgEnv-gnu [compile: 0.598s run: 0.930s total: 1.583s]
+[       OK ] (2/3) Example1Test on bb5:login using PrgEnv-intel [compile: 0.527s run: 0.520s total: 1.069s]
+[       OK ] (3/3) Example1Test on bb5:login using PrgEnv-pgi [compile: 0.201s run: 0.448s total: 0.671s]
+[----------] all spawned checks have finished
+
+[  PASSED  ] Ran 3 test case(s) from 1 check(s) (0 failure(s))
+[==========] Finished on Mon Jun 29 09:58:35 2020
+```
+
+Run test on all partitions of BB5 using:
+
+```bash
+./bin/reframe -C config/bb5.py --system=bb5 -c tutorial/example1.py -r
+[ReFrame Setup]
+  version:           3.1-dev0 (rev: b2b3b6be)
+  command:           './bin/reframe -C config/bb5.py --system=bb5 -c tutorial/example1.py -r'
+  launched by:       kumbhar@bbpv1.epfl.ch
+  working directory: '/gpfs/bbp.cscs.ch/data/project/proj16/kumbhar/pramod_scratch/reframe_test/reframe'
+  settings file:     '/tmp/tmp1iy4me1f.py'
+  check search path: (R) '/gpfs/bbp.cscs.ch/data/project/proj16/kumbhar/pramod_scratch/reframe_test/reframe/tutorial/example1.py'
+  stage directory:   '/gpfs/bbp.cscs.ch/data/project/proj16/kumbhar/pramod_scratch/reframe_test/reframe/stage'
+  output directory:  '/gpfs/bbp.cscs.ch/data/project/proj16/kumbhar/pramod_scratch/reframe_test/reframe/output'
+
+[==========] Running 1 check(s)
+[==========] Started on Mon Jun 29 10:03:17 2020
+
+[----------] started processing Example1Test (Simple matrix-vector multiplication example)
+[ RUN      ] Example1Test on bb5:login using PrgEnv-gnu
+[ RUN      ] Example1Test on bb5:login using PrgEnv-intel
+[ RUN      ] Example1Test on bb5:login using PrgEnv-pgi
+[ RUN      ] Example1Test on bb5:knl using PrgEnv-gnu
+[ RUN      ] Example1Test on bb5:knl using PrgEnv-intel
+[ RUN      ] Example1Test on bb5:gpu using PrgEnv-gnu
+[ RUN      ] Example1Test on bb5:gpu using PrgEnv-intel
+[ RUN      ] Example1Test on bb5:gpu using PrgEnv-pgi
+[ RUN      ] Example1Test on bb5:cpu using PrgEnv-gnu
+[ RUN      ] Example1Test on bb5:cpu using PrgEnv-intel
+[ RUN      ] Example1Test on bb5:p2 using PrgEnv-gnu
+[ RUN      ] Example1Test on bb5:p2 using PrgEnv-intel
+[----------] finished processing Example1Test (Simple matrix-vector multiplication example)
+
+[----------] waiting for spawned checks to finish
+[       OK ] ( 1/12) Example1Test on bb5:login using PrgEnv-pgi [compile: 0.125s run: 2.431s total: 3.659s]
+[       OK ] ( 2/12) Example1Test on bb5:login using PrgEnv-gnu [compile: 0.127s run: 2.950s total: 4.197s]
+[       OK ] ( 3/12) Example1Test on bb5:login using PrgEnv-intel [compile: 0.254s run: 4.864s total: 6.419s]
+[       OK ] ( 4/12) Example1Test on bb5:gpu using PrgEnv-pgi [compile: 0.124s run: 6.771s total: 7.346s]
+[       OK ] ( 5/12) Example1Test on bb5:gpu using PrgEnv-gnu [compile: 0.131s run: 7.051s total: 7.930s]
+[       OK ] ( 6/12) Example1Test on bb5:gpu using PrgEnv-intel [compile: 0.229s run: 9.380s total: 10.052s]
+[       OK ] ( 7/12) Example1Test on bb5:p2 using PrgEnv-gnu [compile: 0.130s run: 11.200s total: 11.354s]
+[       OK ] ( 8/12) Example1Test on bb5:cpu using PrgEnv-gnu [compile: 0.127s run: 11.442s total: 11.888s]
+[       OK ] ( 9/12) Example1Test on bb5:knl using PrgEnv-gnu [compile: 0.158s run: 12.456s total: 13.229s]
+[       OK ] (10/12) Example1Test on bb5:p2 using PrgEnv-intel [compile: 0.222s run: 12.523s total: 12.773s]
+[       OK ] (11/12) Example1Test on bb5:knl using PrgEnv-intel [compile: 0.227s run: 14.050s total: 14.605s]
+[       OK ] (12/12) Example1Test on bb5:cpu using PrgEnv-intel [compile: 0.223s run: 13.782s total: 14.026s]
+[----------] all spawned checks have finished
+
+[  PASSED  ] Ran 12 test case(s) from 1 check(s) (0 failure(s))
+[==========] Finished on Mon Jun 29 10:03:33 2020
+```
+
+
+## Getting ReFrame (Upstream)
 
 You may install ReFrame directly from [PyPI](https://pypi.org/project/ReFrame-HPC/) through `pip`:
 
